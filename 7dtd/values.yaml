@@ -1,0 +1,441 @@
+##
+## @section Global parameters
+##
+
+## @param global.imagePullSecrets - Global Docker registry secret names as an array
+## @param global.storageClass - Global storage class that will be used for all persistent volume claims
+##
+global:
+  ## E.g.
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  imagePullSecrets: []
+  storageClass: ""
+
+##
+## @section Common parameters
+##
+
+## @param nameOverride - String to partially override common.names.fullname template (will maintain the release name)
+##
+nameOverride: ""
+## @param fullnameOverride - String to fully override common.names.fullname template with a string
+##
+fullnameOverride: ""
+## @param clusterDomain - Kubernetes Cluster Domain
+##
+clusterDomain: cluster.local
+## @param commonLabels - Add labels to all the deployed resources
+##
+commonLabels: {}
+## @param commonAnnotations - Add annotations to all the deployed resources
+##
+commonAnnotations: {}
+
+## @param common - Common options for the chart
+##
+common:
+  ## @param common.version - Version to run the server on
+  ## @branches https://steamdb.info/app/251570/depots/
+  version: stable
+  
+  ## @param common.timeZone
+  ##
+  timeZone: Europe/Madrid
+  
+  ## @param common.automatedBackup - Backup server at 5 AM (Only the latest 5 backups will be keep, maximum 30 days)
+  ## https://docs.linuxgsm.com/commands/backup
+  ##
+  automatedBackup: false
+  
+  ## @param common.automatedRestarts - Monitor server status, if server crash this will restart it
+  ## https://docs.linuxgsm.com/commands/monitor
+  ##
+  automatedRestarts: true
+
+  ## @param common.serverOptions - Server options
+  serverOptions:
+    ## @param common.serverOptions.serverName - Whatever you want the name of the server to be.
+    ##
+    serverName: "My Game Host"
+    ## @param common.serverOptions.serverDescription - Whatever you want the server description to be, will be shown in the server browser.
+    ##
+    serverDescription: "A 7 Days to Die server"
+    ## @param common.serverOptions.serverWebsite - Website URL for the server, will be shown in the serverbrowser as a clickable link
+    ##
+    serverWebsite: ""
+    ## @param common.serverOptions.serverPassword - Password to gain entry to the server
+    ##
+    serverPassword: ""
+    ## @param common.serverOptions.serverLoginConfirmationText - If set the user will see the message during joining the server and has to confirm it before continuing. For more complex changes to this window you can change the "serverjoinrulesdialog" window in XUi
+    ##
+    serverLoginConfirmationText: ""
+    ## @param common.serverOptions.region - The region this server is in. Values: NorthAmericaEast, NorthAmericaWest, CentralAmerica, SouthAmerica, Europe, Russia, Asia, MiddleEast, Africa, Oceania
+    ##
+    region: "Europe"
+    ## @param common.serverOptions.language - Primary language for players on this server. Values: Use any language name that you would users expect to search for. Should be the English name of the language, e.g. not "Deutsch" but "German"
+    ##
+    language: "English"
+    ## @param common.serverOptions.serverVisibility - Visibility of this server
+    ## 2 = public
+    ## 1 = As you are never friend of a dedicated server setting this to "1" will only work when the first player connects manually by IP.
+    ## 0 = Not listed
+    ##
+    serverVisibility: "2"
+
+    ## @param common.serverOptions.gameWorld - "RWG" (see WorldGenSeed and WorldGenSize options below) or any already existing world name in the Worlds folder (currently shipping with e.g. "Navezgane", "PREGEN01", ...)
+    ##
+    gameWorld: "Navezgane"
+
+    ## @param common.serverOptions.gameName - Whatever you want the game name to be. This affects the save game name as well as the seed used when placing decoration (trees etc) in the world. It does not control the generic layout of the world if creating an RWG world
+    ##
+    gameName: "world"
+
+    ## @param common.serverOptions.maxPlayers - Maximum concurrent players
+    ##
+    maxPlayers: "8"
+
+    ## @param common.serverOptions.eac - Enables/Disables EasyAntiCheat
+    eac: true
+
+  ## @param common.additionalServerOptions - Additional server options
+  ## https://developer.valvesoftware.com/wiki/7_Days_to_Die_Dedicated_Server
+  ##
+  ## additionalServerOptions:
+  ##    ServerReservedSlots: 0
+  ##    ServerReservedSlotsPermission: 0
+  ##    ...
+  ##
+  additionalServerOptions: {}
+
+  ## @param common.mods - Builtin Mods
+  ##
+  mods:
+    ## @param common.mods.undeadLegacy - Undead Legacy
+    ##
+    undeadLegacy:
+      ## @param common.mods.undeadLegacy.enabled - Install Undead Legacy, if @param common.mods.darknessFalls.enabled is true too, will not be installed
+      enabled: false
+      
+      ## @param common.mods.undeadLegacy.version - Install Undead Legacy Versions
+      ## https://ul.subquake.com/
+      ##
+      version: stable
+      
+      # @param common.mods.undeadLegacy.updateOnStart - Update Undead Legacy, on server install, if you enable this environment, the mod will be updated every time you start the server and will take sometime.
+      ##
+      updateOnStart: false
+      
+      # @param common.mods.undeadLegacy.customModUrl - Install a custom Undead Legacy Version. CHECK BUILDS COMPATIBILITY
+      ##
+      customModUrl: ""
+    
+    ## @param common.mods.darknessFalls - Darkness Falls
+    ##
+    darknessFalls:
+      ## @param common.mods.darknessFalls.enabled - Install Darkness Falls, if @param common.mods.undeadLegacy.enabled is true too, will not be installed
+      ##
+      enabled: false
+      
+      # @param common.mods.darknessFalls.updateOnStart - Update Darkness Falls, on server install, if you enable this environment, the mod will be updated every time you start the server and will take sometime.
+      ##
+      updateOnStart: false
+      
+      # @param common.mods.darknessFalls.customModUrl - Install a custom Darkness Falls Version. CHECK BUILDS COMPATIBILITY
+      ##
+      customModUrl: ""
+    
+    ## @param common.mods.enZombies - enZombies
+    ##
+    enZombies:
+      ## @param common.mods.enZombies.enabled - Install enZombies
+      ##
+      enabled: false
+      
+      ## @param common.mods.enZombies.addons - Install additional addons
+      ##
+      addons:
+        snufkin: false
+        robeloto: false
+        noNudes: false
+      
+      # @param common.mods.enZombies.updateOnStart - Update enZombies, enZombies + Addons on server install
+      ##
+      updateOnStart: false
+    
+    ## @param common.mods.cpm - CSMM Patron's Mod (CPM)
+    ##
+    cpm:
+      ## @param common.mods.cpm.enabled - Install CPM
+      ##
+      enabled: false
+      
+      # @param common.mods.cpm.updateOnStart - Update CPM, CPM on every server start, depending on your 7 days to die version
+      ##
+      updateOnStart: false
+    
+    ## @param common.mods.allocFixes - Alloc Fixes
+    ##
+    allocFixes:
+      ## @param common.mods.allocFixes.enabled - Install Alloc Fixes
+      ##
+      enabled: false
+      
+      # @param common.mods.allocFixes.updateOnStart - Update Alloc Fixes, depending on your 7 days to die version, on server install
+      ##
+      updateOnStart: false
+    
+    ## @param common.mods.bepInEx - Alloc Fixes
+    ##
+    bepInEx:
+      ## @param common.mods.bepInEx.enabled - Install BepInEx
+      ##
+      enabled: false
+      
+      # @param common.mods.bepInEx.updateOnStart - Update BEPINEX on every server start
+      ##
+      updateOnStart: false
+  
+  ## @param common.customMods - Custom mods
+  ## Defines a list of urls to zip files which should be installed as a mod. All zip files will be downloaded and unpacked in the mods folder, so all archives need to have a sub folder with the mods content in it.
+  ##
+  ## Example:
+  ## customMods:
+  ## - https://example.com/7dtd-mod.zip
+  ##
+  customMods: []
+
+  ## @param common.customMaps - Custom maps
+  ## Defines a list of urls to zip files which should be installed as a map. All zip files will be downloaded and unpacked in the saves folder, so all archives need to have a sub folder with the world content in it.
+  ##
+  ## Required folder structure of archive:
+  ## - Worlds
+  ##    - <GameWorld> (from <7dtd>/Data/Worlds/<GameWorld>)
+  ## - Saves
+  ##    - <GameWorld>
+  ##      - <GameName> (from <userhome>/7DaysToDie/Saves/<GameWorld>/<GameName>)
+  ##
+  ## Example:
+  ## customMaps:
+  ## - https://example.com/7dtd-map.zip
+  ##
+  customMaps: []
+
+  ## @param common.initialAdmins - Initial administrators
+  ## Defines a list of admins
+  ##
+  ## Example:
+  ## initialAdmins:
+  ## - platform: "Steam"
+  ##   userId: "5487944"
+  ##   name: "Max Mustermann"
+  ##   permissionLevel: "0"
+  ##
+  initialAdmins: []
+
+  ## @param common.puid - for UserID
+  ## @param common.pgid - for GroupID
+  ##
+  puid: 1000
+  pgid: 1000
+
+  ## Other configurations
+  ##
+  podAnnotations: { }
+  podSecurityContext: { }
+  securityContext: { }
+  resources: { }
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  nodeSelector: { }
+  tolerations: [ ]
+  affinity: { }
+
+  ## @param nginx.image - Image configuration
+  ##
+  image:
+    name: xjonathanlei/nginx-socks:latest
+    pullPolicy: IfNotPresent
+
+## @param serviceAccount - Service account configurations
+serviceAccount:
+  server:
+    ## @param serviceAccount.server.create Specifies whether a service account should be created
+    create: true
+    ## @param serviceAccount.server.annotations Annotations to add to the service account
+    annotations: {}
+    ## @param serviceAccount.server.name The name of the service account to use
+    ## If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  nginx:
+    ## @param serviceAccount.nginx.create Specifies whether a service account should be created
+    create: true
+    ## @param serviceAccount.nginx.annotations Annotations to add to the service account
+    annotations: { }
+    ## @param serviceAccount.nginx.name The name of the service account to use
+    ## If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+## @param persistence
+persistence:
+  ## @param persistence.serverFiles - Server Files
+  ##
+  serverFiles:
+    enabled: false
+    existingClaim: ""
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 20Gi
+
+  ## @param persistence.saves - Maps
+  ##
+  saves:
+    enabled: false
+    existingClaim: ""
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+
+  ## @param persistence.saves - Logs
+  ##
+  logs:
+    enabled: false
+    existingClaim: ""
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+
+  ## @param persistence.saves - BackUps
+  ##
+  backups:
+    enabled: false
+    existingClaim: ""
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 100Gi
+
+## @param server - Server configuration
+server:
+
+  ## @param server.networkMode
+  ## either "ClusterIP" or "HostNetwork"
+  ##
+  networkMode: "HostNetwork"
+
+  ## @param server.replicaCount - Replicas to deploy
+  ##
+  replicaCount: 1
+
+  ## @param server.image - Image configuration
+  ##
+  image:
+    name: vinanrra/7dtd-server
+    pullPolicy: IfNotPresent
+
+  ## @param server.service - Service configuration
+  ##
+  service:
+    name: ""
+    type: ClusterIP
+    ports:
+      game_tcp01: 26900
+      game_udp01: 26900
+      game_udp02: 26901
+      game_udp03: 26902
+      telnet_cp: 8081
+      webAdmin: 8080
+
+  ## @param server.ingress - Ingress configuration for the server web admin
+  ##
+  ingress:
+    ## @param server.ingress.webAdmin - WebAdmin
+    ##
+    webAdmin:
+      ## @param server.ingress.webAdmin.enabled - Set to true to enable ingress record generation
+      ##
+      enabled: false
+      ## @param server.ingress.webAdmin.existingSecretName - Use a existing tls secret for this ingress resource
+      #
+      existingSecretName: ""
+      ## @param server.ingress.webAdmin.selfSigned - Create a TLS secret for this ingress record using self-signed certificates generated by helm
+      ##
+      selfSigned: false
+      ## @param server.ingress.webAdmin.pathType - Ingress path type
+      ##
+      pathType: ImplementationSpecific
+      ## @param server.ingress.webAdmin.hostname - Default host for the ingress resource
+      ## The default value is {{ .Values.common.apiDomain }}
+      ##
+      hostname: ""
+      ## @param server.ingress.webAdmin.path - The Path to Nginx. You may need to set this to '/*' in order to use this with ALB ingress controllers.
+      path: /
+      ## @param server.ingress.webAdmin.annotations - Additional annotations for the Ingress resource. To enable certificate autogeneration, place here your cert-manager annotations.
+      ## Example:
+      ## annotations:
+      ##    cert-manager.io/cluster-issuer: letsencrypt
+      ##
+      annotations: { }
+      ## @param server.ingress.webAdmin.ingressClassName Set the ingressClassName on the ingress record for k8s 1.18+
+      ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster .
+      ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+      ##
+      ingressClassName: "nginx"
+      ## @param server.ingress.webAdmin.tls Create TLS Secret
+      ## TLS certificates will be retrieved from a TLS secret with name: {{- printf "%s-tls" (include "domains.apiDomain.tls.secretName" .) }}
+      ## You can use the ingress.secrets parameter to create this TLS secret or relay on cert-manager to create it
+      ##
+      tls: false
+
+  ## Other configurations
+  ##
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+## @param nginx - Defines information about a custom nginx proxy
+## If enabled, this chart will deploy a nginx pod for mapping the enabled services
+## into the hostNetwork
+nginx:
+  enabled: false
+  services:
+    game_tcp01: true
+    game_udp01: true
+    game_udp02: true
+    game_udp03: true
+    telnet_cp: true
+
+  ## Other configurations
+  ##
+  podAnnotations: { }
+  podSecurityContext: { }
+  securityContext: { }
+  resources: { }
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  nodeSelector: { }
+  tolerations: [ ]
+  affinity: { }
+
+  ## @param nginx.image - Image configuration
+  ##
+  image:
+    name: nginx:latest
+    pullPolicy: IfNotPresent

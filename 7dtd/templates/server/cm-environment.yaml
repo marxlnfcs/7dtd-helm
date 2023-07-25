@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ printf "%s-env" (include "server.name" .) }}"
+  namespace: "{{ .Release.Namespace }}"
+  labels: {{- include "server.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+data:
+  START_MODE: "1"
+  VERSION: "{{ default "stable" .Values.common.version }}"
+  PUID: "{{ .Values.common.puid }}"
+  PGID: "{{ .Values.common.pgid }}"
+  TimeZone: "{{ default "Europe/Madrid" .Values.common.timeZone }}"
+
+  UNDEAD_LEGACY: "{{ include "boolToEnv" .Values.common.mods.undeadLegacy.enabled }}"
+  UNDEAD_LEGACY_VERSION: "{{ default "stable" .Values.common.mods.undeadLegacy.version }}"
+  UNDEAD_LEGACY_UPDATE: "{{ include "boolToEnv" .Values.common.mods.undeadLegacy.updateOnStart }}"
+
+  DARKNESS_FALLS: "{{ include "boolToEnv" .Values.common.mods.darknessFalls.enabled }}"
+  DARKNESS_FALLS_URL: "{{ default "" .Values.common.mods.darknessFalls.customModUrl }}"
+  DARKNESS_FALLS_UPDATE: "{{ include "boolToEnv" .Values.common.mods.darknessFalls.updateOnStart }}"
+
+  ENZOMBIES: "{{ include "boolToEnv" .Values.common.mods.enZombies.enabled }}"
+  ENZOMBIES_ADDON_SNUFKIN: "{{ include "boolToEnv" .Values.common.mods.enZombies.addons.snufkin }}"
+  ENZOMBIES_ADDON_ROBELOTO: "{{ include "boolToEnv" .Values.common.mods.enZombies.addons.robeloto }}"
+  ENZOMBIES_ADDON_NONUDES: "{{ include "boolToEnv" .Values.common.mods.enZombies.addons.noNudes }}"
+  ENZOMBIES_UPDATE: "{{ include "boolToEnv" .Values.common.mods.enZombies.updateOnStart }}"
+
+  ALLOC_FIXES: "{{ include "boolToEnv" .Values.common.mods.allocFixes.enabled }}"
+  ALLOC_FIXES_UPDATE: "{{ include "boolToEnv" .Values.common.mods.allocFixes.updateOnStart }}"
+
+  CPM: "{{ include "boolToEnv" .Values.common.mods.cpm.enabled }}"
+  CPM_UPDATE: "{{ include "boolToEnv" .Values.common.mods.cpm.updateOnStart }}"
+
+  BEPINEX: "{{ include "boolToEnv" .Values.common.mods.bepInEx.enabled }}"
+  BEPINEX_UPDATE: "{{ include "boolToEnv" .Values.common.mods.bepInEx.updateOnStart }}"
+
+  BACKUP: "{{ include "boolToEnv" .Values.common.automatedBackup }}"
+  MONITOR: "{{ include "boolToEnv" .Values.common.automatedRestarts }}"
+
+  UPDATE_MODS: "NO"
+  TEST_ALERT: "NO"
+  CHANGE_CONFIG_DIR_OWNERSHIP: "YES"

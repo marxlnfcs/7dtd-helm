@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ printf "%s-config" (include "server.name" .) }}"
+  namespace: "{{ .Release.Namespace }}"
+  labels: {{- include "server.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  sdtdserver.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <ServerSettings>
+      <!-- Overrideable settings -->
+      <property name="ServerDisabledNetworkProtocols" value="SteamNetworking"/>
+      <property name="ServerMaxWorldTransferSpeedKiBs" value="1300"/>
+
+      <!-- Custom settings -->
+      {{- if .Values.common.additionalServerOptions }}
+      {{- range $k, $v:= .Values.common.additionalServerOptions }}
+      <property name="{{$k}}" value="{{$v}}" />
+      {{- end }}
+      {{- end}}
+
+      <!-- Fixed settings -->
+      <property name="ServerName" value="{{ .Values.common.serverOptions.serverName }}"/>
+      <property name="ServerDescription" value="{{ .Values.common.serverOptions.serverDescription }}"/>
+      <property name="ServerWebsiteURL" value="{{ .Values.common.serverOptions.serverWebsite }}"/>
+      <property name="ServerPassword" value="{{ .Values.common.serverOptions.serverPassword }}"/>
+      <property name="ServerLoginConfirmationText" value="{{ .Values.common.serverOptions.serverLoginConfirmationText }}" />
+      <property name="Region" value="{{ .Values.common.serverOptions.region }}" />
+      <property name="Language" value="{{ .Values.common.serverOptions.language }}" />
+      <property name="ServerPort" value="26900"/>
+      <property name="ServerVisibility" value="{{ .Values.common.serverOptions.serverVisibility }}"/>
+      <property name="ServerMaxPlayerCount"	value="{{ .Values.common.serverOptions.maxPlayers }}"/>
+      <property name="WebDashboardEnabled" value="true"/>
+      <property name="WebDashboardPort"	value="8080"/>
+      <property name="WebDashboardUrl" value="{{ include "domain.webAdmin" . }}"/>
+      <property name="EACEnabled" value="{{ .Values.common.serverOptions.eac }}"/>
+      <property name="GameWorld" value="{{ .Values.common.serverOptions.gameWorld }}"/>
+      <property name="GameName" value="{{ .Values.common.serverOptions.gameName }}"/>
+    </ServerSettings>
+
+  custom-mods.json: |-
+    {{ .Values.common.customMods | toJson }}
+
+  custom-maps.json: |-
+    {{ .Values.common.customMaps | toJson }}
+
+  initial-server-admins.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <adminTools>
+        <users>
+            {{- if .Values.common.initialAdmins }}
+            {{- range $admin := .Values.common.initialAdmins }}
+            <user platform="{{ default "Steam" $admin.platform }}" userid="{{ default "" $admin.userId }}" name="{{ default "" $admin.name }}" permission_level="{{ default "0" $admin.permissionLevel }}" />
+            {{- end }}
+            {{- end}}
+        </users>
+        <whitelist/>
+        <blacklist/>
+        <commands>
+            <!-- <permission cmd="dm" permission_level="0" /> -->
+            <!-- <permission cmd="kick" permission_level="1" /> -->
+            <!-- <permission cmd="say" permission_level="1000" /> -->
+            <permission cmd="chunkcache" permission_level="1000"/>
+            <permission cmd="createwebuser" permission_level="1000"/>
+            <permission cmd="debugshot" permission_level="1000"/>
+            <permission cmd="debugweather" permission_level="1000"/>
+            <permission cmd="decomgr" permission_level="1000"/>
+            <permission cmd="getgamepref" permission_level="1000"/>
+            <permission cmd="getgamestat" permission_level="1000"/>
+            <permission cmd="getlogpath" permission_level="1000"/>
+            <permission cmd="getoptions" permission_level="1000"/>
+            <permission cmd="gettime" permission_level="1000"/>
+            <permission cmd="gfx" permission_level="1000"/>
+            <permission cmd="graph" permission_level="1000"/>
+            <permission cmd="help" permission_level="1000"/>
+            <permission cmd="listplayerids" permission_level="1000"/>
+            <permission cmd="listthreads" permission_level="1000"/>
+            <permission cmd="memcl" permission_level="1000"/>
+            <permission cmd="settempunit" permission_level="1000"/>
+        </commands>
+        <apitokens/>
+        <webmodules/>
+        <webusers/>
+    </adminTools>

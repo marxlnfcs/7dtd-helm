@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ include "server.service.name" . }}"
+  namespace: "{{ .Release.Namespace }}"
+  labels: {{- include "server.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.server.service.type }}
+  ports:
+    - port: {{ .Values.server.service.ports.game_tcp01 | int }}
+      targetPort: game-tcp01
+      protocol: TCP
+      name: game-tcp01
+    - port: {{ .Values.server.service.ports.game_udp01 | int }}
+      targetPort: game-udp01
+      protocol: UDP
+      name: game-udp01
+    - port: {{ .Values.server.service.ports.game_udp02 | int }}
+      targetPort: game-udp02
+      protocol: UDP
+      name: game-udp02
+    - port: {{ .Values.server.service.ports.game_udp03 | int }}
+      targetPort: game-udp03
+      protocol: UDP
+      name: game-udp03
+    - port: {{ .Values.server.service.ports.telnet_cp | int }}
+      targetPort: telnet-cp
+      protocol: TCP
+      name: telnet-cp
+    - port: {{ .Values.server.service.ports.webAdmin | int }}
+      targetPort: webadmin
+      protocol: TCP
+      name: webadmin
+  selector: {{- include "server.labels" . | nindent 4 }}

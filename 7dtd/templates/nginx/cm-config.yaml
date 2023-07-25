@@ -1,0 +1,75 @@
+{{- if and (.Values.nginx.enabled) (eq .Values.server.networkMode "ClusterIP") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "nginx.name" . }}-config"
+  namespace: "{{ .Release.Namespace }}"
+  labels: {{- include "nginx.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+data:
+  nginx.conf: |-
+    user  nginx;
+    worker_processes auto;
+    pid /var/run/nginx.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    stream {
+
+      {{- if .Values.nginx.services.game_tcp01 }}
+      upstream backend_game_tcp01 {
+        server {{ printf "%s:%s" (include "server.service.name.external" .) (default "26900" (.Values.server.service.ports.game_tcp01 | toString)) }};
+      }
+      server {
+        listen {{ default "26900" (.Values.server.service.ports.game_tcp01 | toString) }};
+        proxy_pass backend_game_tcp01;
+      }
+      {{- end }}
+
+      {{- if .Values.nginx.services.game_udp01 }}
+      upstream backend_game_udp01 {
+        server {{ printf "%s:%s" (include "server.service.name.external" .) (default "26900" (.Values.server.service.ports.game_udp01 | toString)) }};
+      }
+      server {
+        listen {{ default "26900" (.Values.server.service.ports.game_udp01 | toString) }} udp;
+        proxy_pass backend_game_udp01;
+      }
+      {{- end }}
+
+      {{- if .Values.nginx.services.game_udp02 }}
+      upstream backend_game_udp02 {
+        server {{ printf "%s:%s" (include "server.service.name.external" .) (default "26901" (.Values.server.service.ports.game_udp02 | toString)) }};
+      }
+      server {
+        listen {{ default "26901" (.Values.server.service.ports.game_udp02 | toString) }} udp;
+        proxy_pass backend_game_udp02;
+      }
+      {{- end }}
+
+      {{- if .Values.nginx.services.game_udp03 }}
+      upstream backend_game_udp03 {
+        server {{ printf "%s:%s" (include "server.service.name.external" .) (default "26902" (.Values.server.service.ports.game_udp03 | toString)) }};
+      }
+      server {
+        listen {{ default "26902" (.Values.server.service.ports.game_udp03 | toString) }} udp;
+        proxy_pass backend_game_udp03;
+      }
+      {{- end }}
+
+      {{- if .Values.nginx.services.telnet_cp }}
+      upstream backend_telnet_cp {
+        server {{ printf "%s:%s" (include "server.service.name.external" .) (default "8081" (.Values.server.service.ports.telnet_cp | toString)) }};
+      }
+      server {
+        listen {{ default "8081" (.Values.server.service.ports.telnet_cp | toString) }};
+        proxy_pass backend_telnet_cp;
+      }
+      {{- end }}
+
+    }
+{{- end }}

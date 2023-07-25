@@ -1,0 +1,91 @@
+{{- if and (.Values.nginx.enabled) (eq .Values.server.networkMode "ClusterIP") }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nginx.name" . }}
+  namespace: "{{ .Release.Namespace }}"
+  labels: {{- include "nginx.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "nginx.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "nginx.labels" . | nindent 8 }}
+      annotations:
+        checksum/cm-config: "{{ include (print $.Template.BasePath "/nginx/cm-config.yaml") . | sha256sum }}"
+        {{- if .Values.nginx.podAnnotations }}
+        {{ toYaml .Values.nginx.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if .Values.commonAnnotations }}
+        {{ toYaml .Values.commonAnnotations | nindent 8 }}
+        {{- end }}
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: "{{ default (include "nginx.name" . ) .Values.serviceAccount.nginx.name }}"
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.nginx.podSecurityContext | nindent 8 }}
+      {{- with .Values.nginx.nodeSelector }}
+      nodeSelector:
+         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nginx.affinity }}
+      affinity:
+         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nginx.tolerations }}
+      tolerations:
+         {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: nginx
+          image: "{{ .Values.nginx.image.name }}"
+          imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+          securityContext: {{- toYaml .Values.nginx.securityContext | nindent 12 }}
+          ports:
+            {{- if .Values.nginx.services.game_tcp01 }}
+            - containerPort: {{ default "26900" .Values.server.service.ports.game_tcp01 }}
+              hostPort: {{ default "26900" .Values.server.service.ports.game_tcp01 }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.nginx.services.game_udp01 }}
+            - containerPort: {{ default "26900" .Values.server.service.ports.game_udp01 }}
+              hostPort: {{ default "26900" .Values.server.service.ports.game_udp01 }}
+              protocol: UDP
+            {{- end }}
+            {{- if .Values.nginx.services.game_udp02 }}
+            - containerPort: {{ default "26901" .Values.server.service.ports.game_udp02 }}
+              hostPort: {{ default "26901" .Values.server.service.ports.game_udp02 }}
+              protocol: UDP
+            {{- end }}
+            {{- if .Values.nginx.services.game_udp03 }}
+            - containerPort: {{ default "26902" .Values.server.service.ports.game_udp03 }}
+              hostPort: {{ default "26902" .Values.server.service.ports.game_udp03 }}
+              protocol: UDP
+            {{- end }}
+            {{- if .Values.nginx.services.telnet_cp }}
+            - containerPort: {{ default "8081" .Values.server.service.ports.telnet_cp }}
+              hostPort: {{ default "8081" .Values.server.service.ports.telnet_cp }}
+              protocol: TCP
+            {{- end }}
+
+          resources: {{- toYaml .Values.nginx.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: config
+          configMap:
+            name: "{{ include "nginx.name" . }}-config"
+{{- end }}

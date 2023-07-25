@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ printf "%s-scripts" (include "server.name" .) }}"
+  namespace: "{{ .Release.Namespace }}"
+  labels: {{- include "server.labels" . | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations:
+    {{ toYaml .Values.commonAnnotations | nindent 4 }}
+  {{- end }}
+data:
+  server_preparation.sh: |-
+    #/bin/bash
+    echo "Copying config files to server..."
+    cp /tmp/sdtdserver-configs/* /home/sdtdserver/serverfiles/
+
+    echo "Starting preparation script..."
+    node /tmp/sdtdserver-scripts/server_preparation.js
+
+  server_preparation.js: |-
+    // import packages
+    const fs = require('fs');
+    const cp = require('child_process');
+    const path = require('path');
+
+    // create variables for paths
+    const TEMP = '/tmp/sdtdserver-temp';
+    const TEMP_CONFIG = '/tmp/sdtdserver-configs';
+    const TEMP_CONFIG_ADMINS = path.join(TEMP_CONFIG, 'initial-server-admins.xml');
+    const TEMP_CONFIG_MODS = path.join(TEMP_CONFIG, 'custom-mods.json');
+    const TEMP_CONFIG_MAPS = path.join(TEMP_CONFIG, 'custom-maps.json');
+
+    const SERVER_HOME = '/home/sdtdserver';
+    const SERVER_FILES = path.join(SERVER_HOME, 'serverfiles');
+    const SERVER_MODS = path.join(SERVER_HOME, 'serverfiles/Mods');
+    const SERVER_WORLDS = path.join(SERVER_FILES, 'Data/Worlds');
+    const SERVER_SAVES = path.join(SERVER_HOME, '.local/share/7DaysToDie/Saves');
+
+    // create basic methods
+    const CHECK_FILE = (filePath) => CREATE_FOLDER(path.dirname(filePath)) && filePath;
+    const CREATE_FOLDER = (dirPath) => !fs.existsSync(dirPath) ? fs.mkdirSync(dirPath, {recursive: true}) && dirPath : dirPath;
+    const DELETE = (path) => fs.existsSync(path) ? fs.rmSync(path, {recursive: true}) : null;
+
+    // create server admins
+    const FILE_ADMINS = path.join(SERVER_SAVES, 'serveradmin.xml');
+    if (fs.existsSync(TEMP_CONFIG_ADMINS)) {
+        CHECK_FILE(FILE_ADMINS);
+        if (!fs.existsSync(FILE_ADMINS)) {
+            fs.copyFileSync(TEMP_CONFIG_ADMINS, FILE_ADMINS);
+        }
+    }
+
+    // add custom mods
+    const FILE_MOD_TEMP = path.join(TEMP, 'mods');
+    const FILE_MOD_ARCHIVE = path.join(TEMP, 'mods.zip');
+    if (fs.existsSync(TEMP_CONFIG_MODS)) {
+        const items = JSON.parse(fs.readFileSync(TEMP_CONFIG_MODS).toString());
+        if (Array.isArray(items) && items.length) {
+            for (let item of items) {
+                // create folders
+                CREATE_FOLDER(FILE_MOD_TEMP);
+                CREATE_FOLDER(SERVER_MODS);
+
+                // download file
+                console.log(`[Mods] Downloading mod archive from "${item}"...`);
+                cp.execSync(`wget -q ${item} -O "${FILE_MOD_ARCHIVE}"`);
+
+                // extract file
+                console.log(`[Mods] Extracting mod archive...`);
+                cp.execSync(`unzip -q -o "${FILE_MOD_ARCHIVE}" -d "${FILE_MOD_TEMP}"`);
+
+                // install modules
+                const mods = fs.readdirSync(FILE_MOD_TEMP, {withFileTypes: true});
+                for (let mod of mods.filter(m => m.isDirectory())) {
+                    const tempModPath = path.join(FILE_MOD_TEMP, mod.name);
+                    const serverModPath = path.join(SERVER_MODS, mod.name);
+
+                    DELETE(serverModPath);
+                    CREATE_FOLDER(serverModPath);
+                    console.log(`[Mods] Installing mod "${mod.name}" ...`);
+                    cp.execSync(`cp -r "${tempModPath}/." "${serverModPath}"`);
+                }
+
+                // delete folders/files
+                DELETE(FILE_MOD_TEMP);
+                DELETE(FILE_MOD_ARCHIVE);
+            }
+        }
+    }
+
+    // add custom maps
+    const FILE_MAPS_TEMP = path.join(TEMP, 'maps');
+    const FILE_MAPS_ARCHIVE = path.join(TEMP, 'maps.zip');
+    if (fs.existsSync(TEMP_CONFIG_MAPS)) {
+        const items = JSON.parse(fs.readFileSync(TEMP_CONFIG_MAPS).toString());
+        if (Array.isArray(items) && items.length) {
+            for (let item of items) {
+                // create folders
+                CREATE_FOLDER(FILE_MAPS_TEMP);
+                CREATE_FOLDER(SERVER_WORLDS);
+                CREATE_FOLDER(SERVER_SAVES);
+
+                // download file
+                console.log(`[Maps] Downloading map archive from "${item}"...`);
+                cp.execSync(`wget -q ${item} -O "${FILE_MAPS_ARCHIVE}"`);
+
+                // extract file
+                console.log(`[Maps] Extracting map archive...`);
+                cp.execSync(`unzip -q -o "${FILE_MAPS_ARCHIVE}" -d "${FILE_MAPS_TEMP}"`);
+
+                // copy worlds
+                const WORLDS_PATH = path.join(FILE_MAPS_TEMP, 'Worlds');
+                if (fs.existsSync(WORLDS_PATH)) {
+                    const worlds = fs.readdirSync(WORLDS_PATH, {withFileTypes: true});
+                    for (let world of worlds.filter(m => m.isDirectory())) {
+                        const tempWorldPath = path.join(WORLDS_PATH, world.name);
+                        const serverWorldPath = path.join(SERVER_WORLDS, world.name);
+                        if (!fs.existsSync(serverWorldPath)) {
+                            CREATE_FOLDER(serverWorldPath);
+                            console.log(`[Maps] Installing world "${world.name}" ...`);
+                            cp.execSync(`cp -r "${tempWorldPath}/." "${serverWorldPath}"`);
+                        }
+                    }
+                }
+
+                // copy saves
+                const SAVES_PATH = path.join(FILE_MAPS_TEMP, 'Saves');
+                if (fs.existsSync(SAVES_PATH)) {
+                    const saves = fs.readdirSync(SAVES_PATH, {withFileTypes: true});
+                    for (let save of saves.filter(m => m.isDirectory())) {
+                        const tempSavePath = path.join(SAVES_PATH, save.name);
+                        const serverSavePath = path.join(SERVER_SAVES, save.name);
+                        if (!fs.existsSync(serverSavePath)) {
+                            CREATE_FOLDER(serverSavePath);
+                            console.log(`[Maps] Installing save "${save.name}" ...`);
+                            cp.execSync(`cp -r "${tempSavePath}/." "${serverSavePath}"`);
+                        }
+                    }
+                }
+
+                // delete folders/files
+                DELETE(FILE_MAPS_TEMP);
+                DELETE(FILE_MAPS_ARCHIVE);
+            }
+        }
+    }
+
+    console.log('Preparation has been completed.');
