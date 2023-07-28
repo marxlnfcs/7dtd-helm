@@ -34,9 +34,19 @@ data:
       <property name="ServerPort" value="26900"/>
       <property name="ServerVisibility" value="{{ .Values.common.serverOptions.serverVisibility }}"/>
       <property name="ServerMaxPlayerCount"	value="{{ .Values.common.serverOptions.maxPlayers }}"/>
+
+      {{- if and (.Values.server.ingress.webAdmin.enabled) (.Values.server.ingress.webAdmin.hostname) }}
       <property name="WebDashboardEnabled" value="true"/>
       <property name="WebDashboardPort"	value="8080"/>
       <property name="WebDashboardUrl" value="{{ include "domain.webAdmin" . }}"/>
+      {{- end }}
+
+      {{- if and (.Values.server.ingress.serverFixes.enabled) (.Values.server.ingress.serverFixes.hostname) }}
+      <property name="WebDashboardEnabled" value="true"/>
+      <property name="WebDashboardPort"	value="8082"/>
+      <property name="WebDashboardUrl" value="{{ include "domain.serverFixes" . }}"/>
+      {{- end }}
+
       <property name="EACEnabled" value="{{ .Values.common.serverOptions.eac }}"/>
       <property name="GameWorld" value="{{ .Values.common.serverOptions.gameWorld }}"/>
       <property name="GameName" value="{{ .Values.common.serverOptions.gameName }}"/>

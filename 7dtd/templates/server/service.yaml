@@ -31,8 +31,19 @@ spec:
       targetPort: telnet-cp
       protocol: TCP
       name: telnet-cp
+
+    {{- if and (.Values.server.ingress.webAdmin.enabled) (.Values.server.ingress.webAdmin.hostname) }}
     - port: {{ .Values.server.service.ports.webAdmin | int }}
       targetPort: webadmin
       protocol: TCP
       name: webadmin
+    {{- end }}
+
+    {{- if and (.Values.server.ingress.serverFixes.enabled) (.Values.server.ingress.serverFixes.hostname) }}
+    - port: {{ .Values.server.service.ports.serverFixes | int }}
+      targetPort: serverfixes
+      protocol: TCP
+      name: serverfixes
+    {{- end }}
+
   selector: {{- include "server.labels" . | nindent 4 }}

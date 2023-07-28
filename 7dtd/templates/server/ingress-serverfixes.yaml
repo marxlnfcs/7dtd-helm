@@ -1,0 +1,36 @@
+{{- if and (.Values.server.ingress.serverFixes.enabled) (.Values.server.ingress.serverFixes.hostname) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-serverfixes" (include "server.name" .) }}
+  labels:
+    {{- include "server.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.server.ingress.webAdmin.annotations }}
+    {{ toYaml .Values.server.ingress.webAdmin.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.server.ingress.serverFixes.ingressClassName }}
+  ingressClassName: "{{ .Values.server.ingress.serverFixes.ingressClassName }}"
+  {{- end }}
+  rules:
+    - host: "{{ .Values.server.ingress.serverFixes.hostname }}"
+      http:
+        paths:
+          - path: "{{ default "/" .Values.server.ingress.serverFixes.path }}"
+            pathType: "{{ default "ImplementationSpecific" .Values.server.ingress.serverFixes.pathType }}"
+            backend:
+              service:
+                name: "{{ include "server.service.name" . }}"
+                port:
+                  name: serverfixes
+  {{- if .Values.server.ingress.serverFixes.tls }}
+  tls:
+    - hosts:
+        - "{{ .Values.server.ingress.serverFixes.hostname }}"
+      secretName: "{{ include "server.ingress.serverFixes.tls.secretName" . }}"
+  {{- end }}
+{{- end }}

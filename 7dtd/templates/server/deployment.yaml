@@ -130,12 +130,22 @@ spec:
               hostPort: 26902
               {{- end }}
               protocol: UDP
-            - name: webadmin
-              containerPort: 8080
-              protocol: TCP
             - name: telnet-cp
               containerPort: 8081
               protocol: TCP
+
+            {{- if and (.Values.server.ingress.webAdmin.enabled) (.Values.server.ingress.webAdmin.hostname) }}
+            - name: webadmin
+              containerPort: 8080
+              protocol: TCP
+            {{- end }}
+
+            {{- if and (.Values.server.ingress.serverFixes.enabled) (.Values.server.ingress.serverFixes.hostname) }}
+            - name: serverfixes
+              containerPort: 8082
+              protocol: TCP
+            {{- end }}
+
           resources: {{ toYaml .Values.server.resources | nindent 12 }}
           volumeMounts: {{ include "server.deployment.volumeMounts" . | nindent 12 }}
 
