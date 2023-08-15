@@ -64,7 +64,7 @@ data:
 
                 // download file
                 console.log(`[Mods] Downloading mod archive from "${item}"...`);
-                cp.execSync(`wget -q ${item} -O "${FILE_MOD_ARCHIVE}"`);
+                cp.execSync(`wget -q "${item}" -O "${FILE_MOD_ARCHIVE}"`);
 
                 // extract file
                 console.log(`[Mods] Extracting mod archive...`);
@@ -103,7 +103,7 @@ data:
 
                 // download file
                 console.log(`[Maps] Downloading map archive from "${item}"...`);
-                cp.execSync(`wget -q ${item} -O "${FILE_MAPS_ARCHIVE}"`);
+                cp.execSync(`wget -q "${item}" -O "${FILE_MAPS_ARCHIVE}"`);
 
                 // extract file
                 console.log(`[Maps] Extracting map archive...`);
@@ -155,7 +155,7 @@ data:
 
           // download file
           console.log(`[ServerFiles] Downloading serverfiles archive from "${item}"...`);
-          cp.execSync(`wget -q ${item} -O "${FILE_SERVERFILES_ARCHIVE}"`);
+          cp.execSync(`wget -q "${item}" -O "${FILE_SERVERFILES_ARCHIVE}"`);
 
           // extract file
           console.log(`[ServerFiles] Extracting serverfiles archive...`);
