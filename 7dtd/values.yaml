@@ -222,6 +222,15 @@ common:
   ##
   customMaps: []
 
+  ## @param common.customServerFiles - Custom server files
+  ## Defines a list of urls to zip files which should be extracted in the server files folder. Can be useful if a mod needs to modify the server files.
+  ##
+  ## Example:
+  ## customServerFiles:
+  ## - https://example.com/7dtd-serverfiles.zip
+  ##
+  customServerFiles: []
+
   ## @param common.initialAdmins - Initial administrators
   ## Defines a list of admins
   ##

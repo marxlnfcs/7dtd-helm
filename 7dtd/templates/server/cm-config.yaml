@@ -58,6 +58,9 @@ data:
   custom-maps.json: |-
     {{ .Values.common.customMaps | toJson }}
 
+  custom-server-files.json: |-
+    {{ .Values.common.customServerFiles | toJson }}
+
   initial-server-admins.xml: |-
     <?xml version="1.0" encoding="UTF-8"?>
     <adminTools>

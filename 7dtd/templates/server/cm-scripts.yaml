@@ -29,6 +29,7 @@ data:
     const TEMP_CONFIG_ADMINS = path.join(TEMP_CONFIG, 'initial-server-admins.xml');
     const TEMP_CONFIG_MODS = path.join(TEMP_CONFIG, 'custom-mods.json');
     const TEMP_CONFIG_MAPS = path.join(TEMP_CONFIG, 'custom-maps.json');
+    const TEMP_CONFIG_SERVERFILES = path.join(TEMP_CONFIG, 'custom-server-files.json');
 
     const SERVER_HOME = '/home/sdtdserver';
     const SERVER_FILES = path.join(SERVER_HOME, 'serverfiles');
@@ -141,6 +142,27 @@ data:
                 // delete folders/files
                 DELETE(FILE_MAPS_TEMP);
                 DELETE(FILE_MAPS_ARCHIVE);
+            }
+        }
+    }
+
+    // add custom server files
+    const FILE_SERVERFILES_ARCHIVE = path.join(TEMP, 'serverfiles.zip');
+    if (fs.existsSync(TEMP_CONFIG_SERVERFILES)) {
+	    const items = JSON.parse(fs.readFileSync(TEMP_CONFIG_SERVERFILES).toString());
+	    if (Array.isArray(items) && items.length) {
+		    for (let item of items) {
+
+              // download file
+              console.log(`[ServerFiles] Downloading serverfiles archive from "${item}"...`);
+              cp.execSync(`wget -q ${item} -O "${FILE_SERVERFILES_ARCHIVE}"`);
+
+              // extract file
+              console.log(`[ServerFiles] Extracting serverfiles archive...`);
+              cp.execSync(`unzip -q -o "${FILE_SERVERFILES_ARCHIVE}" -d "${SERVER_FILES}"`);
+
+              // delete folders/files
+              DELETE(FILE_SERVERFILES_ARCHIVE);
             }
         }
     }
