@@ -149,22 +149,22 @@ data:
     // add custom server files
     const FILE_SERVERFILES_ARCHIVE = path.join(TEMP, 'serverfiles.zip');
     if (fs.existsSync(TEMP_CONFIG_SERVERFILES)) {
-	    const items = JSON.parse(fs.readFileSync(TEMP_CONFIG_SERVERFILES).toString());
-	    if (Array.isArray(items) && items.length) {
-		    for (let item of items) {
+      const items = JSON.parse(fs.readFileSync(TEMP_CONFIG_SERVERFILES).toString());
+      if (Array.isArray(items) && items.length) {
+        for (let item of items) {
 
-              // download file
-              console.log(`[ServerFiles] Downloading serverfiles archive from "${item}"...`);
-              cp.execSync(`wget -q ${item} -O "${FILE_SERVERFILES_ARCHIVE}"`);
+          // download file
+          console.log(`[ServerFiles] Downloading serverfiles archive from "${item}"...`);
+          cp.execSync(`wget -q ${item} -O "${FILE_SERVERFILES_ARCHIVE}"`);
 
-              // extract file
-              console.log(`[ServerFiles] Extracting serverfiles archive...`);
-              cp.execSync(`unzip -q -o "${FILE_SERVERFILES_ARCHIVE}" -d "${SERVER_FILES}"`);
+          // extract file
+          console.log(`[ServerFiles] Extracting serverfiles archive...`);
+          cp.execSync(`unzip -q -o "${FILE_SERVERFILES_ARCHIVE}" -d "${SERVER_FILES}"`);
 
-              // delete folders/files
-              DELETE(FILE_SERVERFILES_ARCHIVE);
-            }
+          // delete folders/files
+          DELETE(FILE_SERVERFILES_ARCHIVE);
         }
+      }
     }
 
     console.log('Preparation has been completed.');
